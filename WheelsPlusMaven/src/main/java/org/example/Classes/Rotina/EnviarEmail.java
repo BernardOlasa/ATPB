@@ -28,6 +28,7 @@ public class EnviarEmail extends Thread {
             for (Aluguel aluguel : GerenciadorDeDados.alugueis) {
                 LocalDate date = aluguel.getDataAluguel().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 date = date.plusDays(aluguel.getDiasAlugados());
+                if(!aluguel.isBicicletasDevolvidas()){
                 if (date.isAfter(LocalDate.now())) {
                     Cliente cliente = aluguel.getCliente();
                     cliente.enviarEmail(remetente, senhaApp);
@@ -37,6 +38,7 @@ public class EnviarEmail extends Thread {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+            }
             }
         }
     }
