@@ -26,6 +26,7 @@ public class GUI {
     // Frame Principal
     private JFrame janelaPrincipal = new JFrame();
 
+    private JPanel cardAtualmenteFocado = null;
     // Navbar
     private JMenuBar barraDeNavegacao;
     private JMenu itemMenu1, itemMenu2, itemMenu3;
@@ -472,20 +473,59 @@ public class GUI {
         estacavelPianel.add(estacavelLabel);
         estacavelCheckbox = new JCheckBox();
         estacavelPianel.add(estacavelCheckbox);
-        criarPromocao = new JButton("Cancelar");
+
+        // O botão agora é "Criar Promoção"
+        criarPromocao = new JButton("Criar Promoção");
         estacavelPianel.add(criarPromocao);
+
+        // >>> INÍCIO DA CORREÇÃO <<<
         criarPromocao.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(!(dataInicioPromocao.equals("") || dataFimPromocao.equals("") ||porcentagemInput.equals(""))){
-                    for(Bicicleta b: bikesSelecionadas){
-                        b.getPromocoes().add(new Promocao(dataInicioPromocao.getDate(),dataFimPromocao.getDate(),Double.parseDouble(porcentagemInput.getText()),estacavelCheckbox.isSelected()));
-                    }
-                    bikesSelecionadas.clear();
+                // Validação simples dos campos
+                if(dataInicioPromocao.getDate() == null || dataFimPromocao.getDate() == null || porcentagemInput.getText().trim().isEmpty()){
+                    JOptionPane.showMessageDialog(janelaPrincipal, "Preencha todos os campos da promoção.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
+                if (bikesSelecionadas.isEmpty()){
+                    JOptionPane.showMessageDialog(janelaPrincipal, "Selecione ao menos uma bicicleta para a promoção.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // 1. Aplica a promoção em cada bicicleta selecionada
+                for(Bicicleta b: bikesSelecionadas){
+                    try {
+                        Promocao novaPromocao = new Promocao(
+                                dataInicioPromocao.getDate(),
+                                dataFimPromocao.getDate(),
+                                Double.parseDouble(porcentagemInput.getText()),
+                                estacavelCheckbox.isSelected()
+                        );
+                        b.getPromocoes().add(novaPromocao);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(janelaPrincipal, "O valor da porcentagem é inválido.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                        return; // Interrompe a operação se a porcentagem for inválida
+                    }
+                }
+
+                // 2. Move os dados das bicicletas de volta para a lista de origem
+                bicicletasTodasTemp.addAll(bikesSelecionadas);
+
+                // 3. Limpa a lista de seleção
+                bikesSelecionadas.clear();
+
+                // 4. MANDA A INTERFACE SE ATUALIZAR com base nas listas de dados modificadas
+                atualizarPainelBicicletas(innerPanelDisponiveisPromocao, innerPanelSelecionadasPromocao, bicicletasTodasTemp, bikesSelecionadas, "Adicionar Bicicleta", "Remover Bicicleta");
+                atualizarPainelBicicletas(innerPanelSelecionadasPromocao, innerPanelDisponiveisPromocao, bikesSelecionadas, bicicletasTodasTemp, "Remover Bicicleta", "Adicionar Bicicleta");
+
+                JOptionPane.showMessageDialog(janelaPrincipal, "Promoção aplicada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             }
         });
-
+        // >>> FIM DA CORREÇÃO <<<
     }
+
+
+
+
     private void configurarPainelBicicletasPromocao() {
         painelBicicletasPromocao = new JPanel();
         painelBicicletasPromocao.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -522,43 +562,122 @@ public class GUI {
         janelaAtiva.setVisible(true);
     }
 
+
+
+
     // Métodos para criação dos cards de bicicletas
+
+    private void aplicarCoresAoCard(Component componente, Color corFundo, Color corLetra) {
+        componente.setBackground(corFundo);
+
+        // Se o componente for um JLabel, mudamos a cor da letra
+        if (componente instanceof JLabel) {
+            componente.setForeground(corLetra);
+        }
+
+        // Se o componente for um container (como um JPanel), fazemos o mesmo para seus filhos
+        if (componente instanceof Container) {
+            for (Component filho : ((Container) componente).getComponents()) {
+                aplicarCoresAoCard(filho, corFundo, corLetra);
+            }
+        }
+    }
+
     public JPanel criarCardBicicleta(Bicicleta bicicleta, List<Bicicleta> origem, List<Bicicleta> destino,
                                      String textoBotao, String textoBotaoOposto,
                                      JPanel painelOrigem, JPanel painelDestino) {
-        // Configuração do card principal
+
+        // --- NOSSO NOVO ESQUEMA DE CORES ---
+        final Color COR_FUNDO_PADRAO = Color.BLACK;
+        final Color COR_LETRA_PADRAO = new Color(255, 215, 0); // Amarelo Ouro (Gold)
+
+        final Color COR_FUNDO_FOCO = new Color(255, 215, 0); // Amarelo Ouro (Gold)
+        final Color COR_LETRA_FOCO = Color.BLACK;
+
+        // Criação do card
         JPanel card = new JPanel();
-        card.setPreferredSize(new Dimension(300, 200)); // Usar preferredSize em vez de size
-        card.setLayout(new BorderLayout(5, 5)); // Layout mais organizado
-        card.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-
-        // Painel de informações
-        JPanel painelInformacoes = new JPanel(new GridLayout(4, 2, 5, 5));
-        painelInformacoes.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        adicionarLabelFormatada(painelInformacoes, "ID:", bicicleta.getIdBicicleta());
-        adicionarLabelFormatada(painelInformacoes, "Preço:", String.format("R$ %.2f", bicicleta.getValorAluguel()));
-        adicionarLabelFormatada(painelInformacoes, "Desconto:", String.format("%.2f%%", bicicleta.pegarMaiorPromocao()));
-        adicionarLabelFormatada(painelInformacoes, "Marca:", bicicleta.getMarca());
-        adicionarLabelFormatada(painelInformacoes, "Modelo:", bicicleta.getModelo());
-        adicionarLabelFormatada(painelInformacoes, "Cor:", bicicleta.getCor());
-
-        // Botão de ação
-        JButton botaoAcao = new JButton(textoBotao);
-        botaoAcao.setActionCommand(String.valueOf(bicicleta.getIdBicicleta()));
-        botaoAcao.addActionListener(e -> moverBicicleta(
-                Integer.parseInt(e.getActionCommand()),
-                origem, destino,
-                painelOrigem, painelDestino,
-                textoBotao, textoBotaoOposto
+        card.setPreferredSize(new Dimension(300, 90));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+        card.setLayout(new BorderLayout(5, 5));
+        // A borda agora pode ser da cor do texto para um bom contraste
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_LETRA_PADRAO, 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
-        // Montagem do card
-        card.add(painelInformacoes, BorderLayout.CENTER);
-        card.add(botaoAcao, BorderLayout.EAST);
+        // Painel de informações interno
+        JPanel painelInformacoes = new JPanel(new GridLayout(0, 2, 5, 2));
+        painelInformacoes.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
+        // Adicionando os textos (a cor será definida pelo método "pintor")
+        class LabelHelper {
+            void adicionar(JPanel painel, String rotulo, Object valor) {
+                Font fontePequena = new Font("Tahoma", Font.PLAIN, 11);
+                JLabel labelRotulo = new JLabel(rotulo);
+                labelRotulo.setFont(fontePequena);
+                JLabel labelValor = new JLabel(valor.toString());
+                labelValor.setFont(fontePequena);
+                JPanel container = new JPanel(new BorderLayout(5, 0));
+                container.add(labelRotulo, BorderLayout.WEST);
+                container.add(labelValor, BorderLayout.CENTER);
+                painel.add(container);
+            }
+        }
+        new LabelHelper().adicionar(painelInformacoes, "ID:", bicicleta.getIdBicicleta());
+        new LabelHelper().adicionar(painelInformacoes, "Preço:", String.format("R$ %.2f", bicicleta.getValorAluguel()));
+        new LabelHelper().adicionar(painelInformacoes, "Marca:", bicicleta.getMarca());
+        new LabelHelper().adicionar(painelInformacoes, "Modelo:", bicicleta.getModelo());
+
+        card.add(painelInformacoes, BorderLayout.CENTER);
+
+        // --- ESTADO INICIAL ---
+        // Pinta o card com as cores padrão (fundo preto, letras douradas)
+        aplicarCoresAoCard(card, COR_FUNDO_PADRAO, COR_LETRA_PADRAO);
+
+        // --- GERENCIADOR DE CLIQUES ATUALIZADO ---
+        MouseAdapter clickManager = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    cardAtualmenteFocado = null;
+                    moverBicicleta(bicicleta.getIdBicicleta(), origem, destino, painelOrigem, painelDestino, textoBotao, textoBotaoOposto);
+                    return;
+                }
+
+                if (e.getClickCount() == 1) {
+                    // Se já existe um card focado e não é o atual, restaura sua cor padrão.
+                    if (cardAtualmenteFocado != null && cardAtualmenteFocado != card) {
+                        aplicarCoresAoCard(cardAtualmenteFocado, COR_FUNDO_PADRAO, COR_LETRA_PADRAO);
+                        // Atualiza a borda também
+                        cardAtualmenteFocado.setBorder(BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(COR_LETRA_PADRAO, 1),
+                                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+                        ));
+                    }
+
+                    // Aplica as cores de foco no card que acabou de ser clicado.
+                    aplicarCoresAoCard(card, COR_FUNDO_FOCO, COR_LETRA_FOCO);
+                    // Atualiza a borda para a cor de foco
+                    card.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(COR_LETRA_FOCO, 1),
+                            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+                    ));
+
+                    // Atualiza a referência do card focado.
+                    cardAtualmenteFocado = card;
+                }
+            }
+        };
+
+        card.addMouseListener(clickManager);
+
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return card;
     }
+
+
+
+
     private void adicionarLabelFormatada(JPanel painel, String rotulo, Object valor) {
         JPanel container = new JPanel(new BorderLayout(5, 0));
         container.add(new JLabel(rotulo), BorderLayout.WEST);
