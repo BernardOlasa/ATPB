@@ -1,0 +1,70 @@
+@startuml
+' Título do Diagrama
+title Diagrama de Sequência - Efetuar Aluguel
+
+' Definições de Estilo baseadas em PaletaCores.java
+skinparam sequence {
+    LifeLineBorderColor #6c584c
+    ParticipantBorderColor #6c584c
+    ParticipantFontColor #6c584c
+    ActorBorderColor #6c584c
+    ActorFontColor #6c584c
+    ArrowColor #6c584c
+}
+
+' Atores e Participantes com cores
+actor "Funcionário" as Funcionario #adc178
+participant "PainelAluguel" as PA #dde5b6
+participant "PainelSeletorDeBicicletas" as PS #dde5b6
+participant "GerenciadorDeDados" as GD #a98467
+participant "Aluguel" as AL #dde5b6
+participant "GeradorDeReciboPDF" as GRPDF #adc178
+participant "Bicicleta" as B #dde5b6
+
+' Início da sequência
+Funcionario -> PA : Preenche dados e seleciona bicicletas
+activate PA
+
+Funcionario -> PA : Clica em "Efetuar Aluguel"
+PA -> PA : validaCampos()
+PA -> PS : getBicicletasSelecionadas()
+activate PS
+PS --> PA : Retorna List<Bicicleta>
+deactivate PS
+
+note over PA #f0ead2: Inicia SwingWorker para operação em background
+
+PA -> GD : stream().max() para obter novoId
+activate GD
+GD --> PA : Retorna novoId
+deactivate GD
+
+PA -> AL ** : <<create>>
+PA -> AL : new Aluguel(novoId, cliente, bicicletas, ...)
+
+loop Para cada bicicleta na lista
+    PA -> B : setAlugada(true)
+end
+
+PA -> GD : salvarDados("Alugueis", alugueis)
+activate GD
+deactivate GD
+
+PA -> GD : salvarDados("Bicicletas", bicicletas)
+activate GD
+deactivate GD
+
+PA -> GRPDF : gerar(novoAluguel)
+activate GRPDF
+GRPDF --> PA : Retorna caminhoDoRecibo
+deactivate GRPDF
+
+PA -> GRPDF : enviarPorEmail(novoAluguel, caminhoDoRecibo)
+activate GRPDF
+deactivate GRPDF
+
+PA -> Funcionario : Exibe "Aluguel realizado com sucesso"
+PA -> PA : refreshData()
+deactivate PA
+
+@enduml

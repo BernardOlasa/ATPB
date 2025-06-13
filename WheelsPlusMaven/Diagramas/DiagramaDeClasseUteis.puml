@@ -1,0 +1,78 @@
+@startuml
+' Título do Diagrama
+title Diagrama de Classes - Domínio e Dados
+
+' Direção do layout
+left to right direction
+
+' Definições de Estilo baseadas em PaletaCores.java
+skinparam class {
+    BorderColor #6c584c
+    ArrowColor #6c584c
+    FontColor #6c584c
+}
+
+' Classes
+class Cliente #dde5b6 {
+  -cpf: String
+  -nome: String
+  -email: String
+  -score: double
+  +adicionarAluguel(Aluguel)
+  +enviarEmail(String, String)
+}
+
+class Aluguel #dde5b6 {
+  -idAluguel: int
+  -diasAlugados: int
+  -valorTotal: double
+  +calcularValorTotal(): double
+}
+
+class Bicicleta #dde5b6 {
+  -idBicicleta: int
+  -valorAluguel: double
+  -alugada: boolean
+  +pegarMaiorPromocao(): double
+}
+
+class Promocao #dde5b6
+class Usuario #dde5b6
+
+class GeradorDeReciboPDF #adc178 {
+  <<static>> +gerar(Aluguel): String
+  <<static>> +enviarPorEmail(Aluguel, String)
+}
+
+class EnviarEmail #adc178 {
+  +run()
+}
+
+class GerenciadorDeDados #a98467 {
+  <<static>> +clientes: List<Cliente>
+  <<static>> +bicicletas: List<Bicicleta>
+  <<static>> +alugueis: List<Aluguel>
+  <<static>> +salvarDados(String, List)
+}
+
+class Main #d90429 {
+  <<static>> +main(String[])
+}
+
+' Relacionamentos
+Cliente "1" -- "0..*" Aluguel : realiza >
+Aluguel "1" *-- "1..*" Bicicleta : contém >
+Bicicleta "1" *-- "0..*" Promocao : tem >
+
+GerenciadorDeDados ..> Cliente : gerencia
+GerenciadorDeDados ..> Bicicleta : gerencia
+GerenciadorDeDados ..> Aluguel : gerencia
+GerenciadorDeDados ..> Usuario : gerencia
+
+GeradorDeReciboPDF ..> Aluguel : usa
+EnviarEmail ..> Cliente : notifica
+
+Main ..> EnviarEmail : inicia
+Main ..> TelaLogin : inicia
+
+@enduml
