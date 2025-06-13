@@ -8,6 +8,16 @@ public final class Aluguel {
     protected Cliente cliente;
     protected Date dataAluguel;
     protected double valorAluguel, valorTotal,valorSeguro;
+    protected boolean bicicletasDevolvidas;
+
+    public boolean isBicicletasDevolvidas() {
+        return bicicletasDevolvidas;
+    }
+
+    public void setBicicletasDevolvidas(boolean bicicletasDevolvidas) {
+        this.bicicletasDevolvidas = bicicletasDevolvidas;
+    }
+
 
 
     public double calcularValorAluguel(){

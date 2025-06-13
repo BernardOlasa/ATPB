@@ -5,7 +5,7 @@ import java.util.*;
 public final class Bicicleta {
     protected int idBicicleta, aroDaRoda;
     protected double valorAluguel, valorSeguro;
-    protected boolean specialist, alugada, emManutencao;
+    protected boolean specialist, alugada, emManutencao, excluida; // campo adicionado
     protected List<Promocao> promocoes;
     protected String marca, modelo, cor, materialDoAro, materialDaBicicleta;
 
@@ -34,12 +34,12 @@ public final class Bicicleta {
 
     @Override
     public String toString() {
-        return String.format("%d,%d,%.2f,%.2f,%b,%b,%b,%s,%s,%s,%s,%s,%s",
-                idBicicleta, aroDaRoda, valorAluguel, valorSeguro, specialist, alugada, emManutencao, promocoes, marca, modelo, cor, materialDoAro, materialDaBicicleta);
+        return String.format("%d,%d,%.2f,%.2f,%b,%b,%b,%b,%s,%s,%s,%s,%s,%s", // campo adicionado
+                idBicicleta, aroDaRoda, valorAluguel, valorSeguro, specialist, alugada, emManutencao, excluida, promocoes, marca, modelo, cor, materialDoAro, materialDaBicicleta);
     }
 
     //--------------------------------------{Construtor}--------------------------------------
-    public Bicicleta(int idBicicleta, int aroDaRoda, double valorAluguel, double valorSeguro, boolean specialist, boolean alugada, boolean emManutencao, List<Promocao> promocoes, String marca, String modelo, String cor, String materialDoAro, String materialDaBicicleta) {
+    public Bicicleta(int idBicicleta, int aroDaRoda, double valorAluguel, double valorSeguro, boolean specialist, boolean alugada, boolean emManutencao, boolean excluida, List<Promocao> promocoes, String marca, String modelo, String cor, String materialDoAro, String materialDaBicicleta) {
         this.idBicicleta = idBicicleta;
         this.aroDaRoda = aroDaRoda;
         this.valorAluguel = valorAluguel;
@@ -47,6 +47,7 @@ public final class Bicicleta {
         this.specialist = specialist;
         this.alugada = alugada;
         this.emManutencao = emManutencao;
+        this.excluida = excluida; // campo adicionado
         this.promocoes = promocoes;
         this.marca = marca;
         this.modelo = modelo;
@@ -56,6 +57,14 @@ public final class Bicicleta {
     }
 
     //----------------------------------------{GET SET}---------------------------------------
+    public boolean isExcluida() { // método adicionado
+        return excluida;
+    }
+
+    public void setExcluida(boolean excluida) { // método adicionado
+        this.excluida = excluida;
+    }
+
     public int getIdBicicleta() {
         return idBicicleta;
     }
