@@ -1,0 +1,67 @@
+@startuml
+' Título do Diagrama
+title Diagrama de Classes - Interface do Usuário (UI)
+
+' Definições de Estilo baseadas em PaletaCores.java
+skinparam package {
+    BorderColor #6c584c
+    BackgroundColor #f0ead2
+}
+skinparam class {
+    BorderColor #6c584c
+    ArrowColor #6c584c
+    FontColor #6c584c
+}
+
+' Pacote de Lógica
+package "Lógica de Domínio/Dados" {
+  class GerenciadorDeDados #a98467
+  class GeradorDeReciboPDF #adc178
+  class Cliente #dde5b6
+  class Bicicleta #dde5b6
+}
+
+' Pacote de UI
+package "Interface do Usuário (UI)" {
+  class TelaLogin #adc178
+  class GUI #adc178
+  class BarraNavegacao #adc178
+
+  class PainelAluguel #dde5b6
+  class PainelEntrega #dde5b6
+  class PainelSeletorDeBicicletas #dde5b6
+  class PainelCRUDBicicleta #dde5b6
+  class PainelCRUDCliente #dde5b6
+  class PainelDashboard #dde5b6
+  class PainelPromocao #dde5b6
+
+  class DialogBicicleta #a98467
+  class DialogCliente #a98467
+
+  class BicicletaCard #dde5b6
+}
+
+' Relacionamentos
+TelaLogin --> GUI : cria
+TelaLogin ..> GerenciadorDeDados : valida
+
+GUI o-- BarraNavegacao : contém
+GUI o-- PainelAluguel : contém
+GUI o-- PainelCRUDBicicleta
+GUI o-- PainelCRUDCliente
+
+PainelAluguel o-- PainelSeletorDeBicicletas : usa
+PainelAluguel ..> GeradorDeReciboPDF : chama
+PainelAluguel ..> GerenciadorDeDados : usa dados
+
+PainelCRUDBicicleta ..> GerenciadorDeDados : usa dados
+PainelCRUDCliente ..> GerenciadorDeDados : usa dados
+
+PainelCRUDBicicleta ..> DialogBicicleta : cria
+PainelCRUDCliente ..> DialogCliente : cria
+DialogCliente ..> Cliente : cria/edita
+DialogBicicleta ..> Bicicleta : cria/edita
+
+PainelSeletorDeBicicletas ..> BicicletaCard : cria
+
+@enduml

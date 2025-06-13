@@ -1,0 +1,60 @@
+@startuml
+' Título do Diagrama
+title Diagrama de Caso de Uso - Wheels+
+
+' Definições de Estilo baseadas em PaletaCores.java
+skinparam actorBorderColor #6c584c
+skinparam actorBackgroundColor #adc178
+skinparam actorFontColor #6c584c
+
+skinparam usecase {
+    BackgroundColor #dde5b6
+    BorderColor #6c584c
+    FontColor #6c584c
+}
+
+skinparam rectangle {
+    BorderColor #6c584c
+    BackgroundColor #f0ead2
+    FontColor #6c584c
+}
+
+' Atores
+actor Funcionário
+actor Gerente
+actor Sistema
+
+' Relação de Herança entre Atores
+Gerente --|> Funcionário
+
+' Fronteira do Sistema
+rectangle "Sistema Wheels+" {
+  (Registrar Aluguel) as UC1
+  (Registrar Entrega) as UC2
+  (Gerenciar Clientes) as UC3
+  (Gerenciar Bicicletas) as UC4
+  (Gerenciar Promoções) as UC5
+  (Visualizar Dashboard) as UC6
+  (Visualizar Histórico) as UC7
+  (Enviar Email de Atraso) as UC8
+  (Gerar Recibo em PDF) as UC9
+  (Enviar Recibo por Email) as UC10
+}
+
+' Relacionamentos
+Funcionário --> UC1
+Funcionário --> UC2
+
+Gerente --> UC3
+Gerente --> UC4
+Gerente --> UC5
+Gerente --> UC6
+Gerente --> UC7
+
+UC1 ..> UC9 : <<include>>
+UC1 ..> UC10 : <<include>>
+UC8 .> UC10 : <<include>>
+
+Sistema --> UC8
+
+@enduml
